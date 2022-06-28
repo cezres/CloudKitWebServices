@@ -7,7 +7,7 @@ final class CloudKitWebServicesTests: XCTestCase {
     
     override func setUp() async throws {
         guard let resourceURL = Bundle.module.resourceURL else { return }
-        let configurationUrl = resourceURL.appendingPathComponent("Resources/configuration.json")
+        let configurationUrl = Bundle.module.url(forResource: "configuration", withExtension: "json") ?? resourceURL.appendingPathComponent("Resources/configuration.json")
         let configurationData = try Data(contentsOf: configurationUrl)
         let configurationJson = try JSONSerialization.jsonObject(with: configurationData) as! [String: String]
         print(configurationJson)

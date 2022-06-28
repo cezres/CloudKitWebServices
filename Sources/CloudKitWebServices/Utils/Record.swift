@@ -75,39 +75,20 @@ public struct RecordField: Codable {
     public func encode(to encoder: Encoder) throws {
         var values = encoder.container(keyedBy: CodingKeys.self)
         
-        if let value = value as? Codable {
+        if let value = value as? String {
             try values.encode(value, forKey: .value)
+        } else if let value = value as? Int64 {
+            try values.encode(value, forKey: .value)
+        } else if let value = value as? Int {
+            try values.encode(value, forKey: .value)
+        } else if let value = value as? RecordAssetField {
+            try values.encode(value, forKey: .value)
+        } else {
+            fatalError()
         }
         try values.encode(type, forKey: .type)
     }
 }
-
-//protocol RecordField: Codable {
-//    associatedtype Value: RecordFieldValue
-//    var value: Value { get set }
-//    var type: RecordFieldType { get set }
-//}
-//
-//struct RecordStringField: RecordField {
-//    var value: String
-//    var type: RecordFieldType = .STRING
-//}
-//
-//struct RecordInt64Field: RecordField {
-//    var value: Int64
-//    var type: RecordFieldType = .INT64
-//}
-//
-//struct RecordAssetField: RecordField {
-//    var value: Value
-//    var type: RecordFieldType = .ASSETID
-//
-//    struct Value: RecordFieldValue {
-//        let fileChecksum: String
-//        let size: UInt
-//        let downloadURL: String
-//    }
-//}
 
 public enum RecordFieldType: String, Codable {
     case STRING

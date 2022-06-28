@@ -33,7 +33,7 @@ public struct CloudKitWebServicesError: Error, Codable {
 
 // MARK: - Send Request
 extension CloudKitWebServices {
-    func send<ResponseType: Codable>(subpath: String, params: Codable, responseType: ResponseType.Type, completionHandler: @escaping (Result<ResponseType, Error>) -> Void) {
+    func send<ResponseType, Params>(subpath: String, params: Params, responseType: ResponseType.Type, completionHandler: @escaping (Result<ResponseType, Error>) -> Void) where ResponseType: Decodable, Params: Encodable {
         dispatch(subpath: subpath, params: params) { result in
             switch result {
             case .success(let success):
@@ -55,7 +55,7 @@ extension CloudKitWebServices {
         }
     }
     
-    func dispatch<Params: Codable>(subpath: String, params: Params, completionHandler: @escaping (Result<Data, Error>) -> Void) {
+    func dispatch<Params: Encodable>(subpath: String, params: Params, completionHandler: @escaping (Result<Data, Error>) -> Void) {
         do {
             let subpath = createSubpath(subpath: subpath)
             let request = try createSignedRequestWithServerToServerCertificate(body: params, subpath: subpath)
@@ -79,7 +79,7 @@ extension CloudKitWebServices {
         "/database/\(configuration.version)/\(configuration.container)/\(configuration.environment)/\(configuration.database)/\(subpath)"
     }
     
-    private func createSignedRequestWithServerToServerCertificate<Body>(body: Body, subpath: String) throws -> URLRequest where Body: Codable {
+    private func createSignedRequestWithServerToServerCertificate<Body>(body: Body, subpath: String) throws -> URLRequest where Body: Encodable {
         // https://developer.apple.com/library/archive/documentation/DataManagement/Conceptual/CloudKitWebServicesReference/SettingUpWebServices.html#//apple_ref/doc/uid/TP40015240-CH24-SW1
         let httpBody = try JSONEncoder().encode(body)
         print(String(data: httpBody, encoding: .utf8) ?? "")

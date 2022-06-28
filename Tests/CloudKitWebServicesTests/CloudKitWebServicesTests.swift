@@ -47,36 +47,36 @@ final class CloudKitWebServicesTests: XCTestCase {
         print(result)
     }
     
-    func testModifyRecords() async throws {
-        let result = try await withCheckedThrowingContinuation { continuation in
-            self.services.modifyRecords(
-                operations: [
-                    .init(
-                        operationType: .create,
-                        record: .init(
-                            recordName: "300000002_resource_indexes",
-                            recordType: "ResourceIndexes",
-                            fields: [
-                                "version": .init(300000002)
-                            ]
-                        )
-                    )
-                ]
-            ) { result in
-                continuation.resume(with: result)
-            }
-        }
-        print(result)
-    }
-    
-    func testUploadAsset() async throws {
-        let result = try await withCheckedThrowingContinuation { continuation in
-            self.services.uploadAsset([
-                .init(recordName: "300000002_resource_indexes", recordType: "ResourceIndexes", fieldName: "indexes")
-            ]) { result in
-                continuation.resume(with: result)
-            }
-        }
-        print(result)
-    }
+//    func testModifyRecords() async throws {
+//        let result = try await withCheckedThrowingContinuation { continuation in
+//            self.services.modifyRecords(
+//                operations: [
+//                    .init(
+//                        operationType: .forceUpdate,
+//                        record: .init(
+//                            recordName: "300000002_resource_indexes",
+//                            recordType: "ResourceIndexes",
+//                            fields: [
+//                                "version": .init(300000002)
+//                            ]
+//                        )
+//                    )
+//                ]
+//            ) { result in
+//                continuation.resume(with: result)
+//            }
+//        }
+//        print(result)
+//    }
+//    
+//    func testUploadAsset() async throws {
+//        let result = try await withCheckedThrowingContinuation { continuation in
+//            self.services.uploadAsset([
+//                .init(recordName: "300000002_resource_indexes", recordType: "ResourceIndexes", fieldName: "indexes")
+//            ]) { result in
+//                continuation.resume(with: result)
+//            }
+//        }
+//        print(result)
+//    }
 }

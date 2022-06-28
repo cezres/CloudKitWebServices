@@ -10,7 +10,7 @@ final class CloudKitWebServicesTests: XCTestCase {
         let configurationUrl = resourceURL.appendingPathComponent("Resources/configuration.json")
         let configurationData = try Data(contentsOf: configurationUrl)
         let configurationJson = try JSONSerialization.jsonObject(with: configurationData) as! [String: String]
-        
+        print(configurationJson)
         let configuration = CloudKitWebServices.Configuration(
             container: configurationJson["container"]!,
             environment: "development",
@@ -68,7 +68,7 @@ final class CloudKitWebServicesTests: XCTestCase {
 //        }
 //        print(result)
 //    }
-//    
+//
 //    func testUploadAsset() async throws {
 //        let result = try await withCheckedThrowingContinuation { continuation in
 //            self.services.uploadAsset([

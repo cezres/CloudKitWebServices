@@ -1,0 +1,5 @@
+{
+    "container": "Your container ID",
+    "serverKeyID": "Your Server-to-Server Key ID",
+    "serverKey": "Your Server-to-Server Private Key"
+}

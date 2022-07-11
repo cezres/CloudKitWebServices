@@ -1,5 +1,5 @@
 //
-//  Query.swift
+//  CKQuery.swift
 //  
 //
 //  Created by 翟泉 on 2022/6/27.
@@ -7,28 +7,41 @@
 
 import Foundation
 
-public typealias QueryCursor = String
-public let queryMaximumResults: Int = 200
+public typealias CKQueryCursor = String
 
-
-public struct Query: Codable {
+public struct CKQuery: Codable {
+    
     public var recordType: String
-    public var filterBy: [QueryFilter]
-    public var sortBy: [QuerySortDescriptor]
+    
+    public var filterBy: [CKQueryFilter]
+    
+    public var sortBy: [CKQuerySortDescriptor]
 }
 
-public struct QueryFilter: Codable {
+public struct CKQueryFilter: Codable {
+    
     public var fieldName: String
-    public var comparator: QueryFilterComparator
-    public var fieldValue: RecordField
+    
+    public var comparator: CKQueryFilterComparator
+    
+    public var fieldValue: CKRecordField
+    
+    public init(_ fieldName: String, _ comparator: CKQueryFilterComparator, _ fieldValue: CKRecordField) {
+        self.fieldName = fieldName
+        self.comparator = comparator
+        self.fieldValue = fieldValue
+    }
 }
 
-public struct QuerySortDescriptor: Codable {
+public struct CKQuerySortDescriptor: Codable {
+    
     public var fieldName: String
+    
     public var ascending: Bool
+    
 }
 
-public enum QueryFilterComparator: String, Codable {
+public enum CKQueryFilterComparator: String, Codable {
     case EQUALS
     case NOT_EQUALS
     case LESS_THAN

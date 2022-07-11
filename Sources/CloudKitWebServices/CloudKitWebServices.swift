@@ -31,80 +31,45 @@ public struct CloudKitWebServicesError: Error, Codable {
     public let reason: String
 }
 
-// MARK: - Send Request
 extension CloudKitWebServices {
-    func send<ResponseType, Params>(subpath: String, params: Params, responseType: ResponseType.Type, completionHandler: @escaping (Result<ResponseType, Error>) -> Void) where ResponseType: Decodable, Params: Encodable {
-        dispatch(subpath: subpath, params: params) { result in
-            switch result {
-            case .success(let success):
-                do {
-                    let result = try JSONDecoder().decode(responseType, from: success)
-                    completionHandler(.success(result))
-                } catch {
-                    let err = error
-                    do {
-                        let error = try JSONDecoder().decode(CloudKitWebServicesError.self, from: success)
-                        completionHandler(.failure(error))
-                    } catch {
-                        completionHandler(.failure(err))
-                    }
-                }
-            case .failure(let failure):
-                completionHandler(.failure(failure))
-            }
-        }
-    }
-    
-    func dispatch<Params: Encodable>(subpath: String, params: Params, completionHandler: @escaping (Result<Data, Error>) -> Void) {
-        do {
-            let subpath = createSubpath(subpath: subpath)
-            let request = try createSignedRequestWithServerToServerCertificate(body: params, subpath: subpath)
-            session.dataTask(with: request) { data, response, error in
-                if let data = data, let _ = response {
-                    print(String(data: data, encoding: .utf8) ?? "")
-                    completionHandler(.success(data))
-                } else if let error = error {
-                    completionHandler(.failure(error))
-                }
-            }.resume()
-        } catch {
-            completionHandler(.failure(error))
-        }
+    func perform<Request: CKRequest>(_ request: Request) async throws -> Request.Response {
+        let request = try request.asURLRequest(configuration: configuration)
+        let (data, _) = try await session.data(for: request)
+        print(request.url?.absoluteString ?? "")
+        print(String(data: request.httpBody ?? .init(), encoding: .utf8) ?? "")
+        print(String(data: data, encoding: .utf8) ?? "")
+        return try Request.decodeResponse(data)
     }
 }
 
-// MARK: - Utils
 extension CloudKitWebServices {
-    private func createSubpath(subpath: String) -> String {
-        "/database/\(configuration.version)/\(configuration.container)/\(configuration.environment)/\(configuration.database)/\(subpath)"
+    public func records(for ids: [CKRecordID], desiredKeys: [CKRecordFieldKey]? = nil) async throws -> [CKRecordResult] {
+        try await perform(
+            CKFetchRecordsRequest(recordIds: ids, desiredKeys: desiredKeys)
+        )
     }
     
-    private func createSignedRequestWithServerToServerCertificate<Body>(body: Body, subpath: String) throws -> URLRequest where Body: Encodable {
-        // https://developer.apple.com/library/archive/documentation/DataManagement/Conceptual/CloudKitWebServicesReference/SettingUpWebServices.html#//apple_ref/doc/uid/TP40015240-CH24-SW1
-        let httpBody = try JSONEncoder().encode(body)
-        print(String(data: httpBody, encoding: .utf8) ?? "")
-        
-        // Date
-        let date = ISO8601DateFormatter().string(from: .init())
-        // Payload
-        var sha256 = SHA256()
-        sha256.update(data: httpBody)
-        let payload = Data(sha256.finalize()).base64EncodedString()
-        // Message
-        let message = date + ":" + payload + ":" + subpath
-        // Signature
-//        let pemRepresentation = String(data: configuration.serverKey, encoding: .utf8)!
-        let privateKey = try! P256.Signing.PrivateKey(pemRepresentation: configuration.serverKey)
-        let signature = try privateKey.signature(for: message.data(using: .utf8)!).derRepresentation.base64EncodedString()
-        
-        var request = URLRequest(url: .init(string: "\(configuration.path)\(subpath)")!)
-        print(request.url!.absoluteString)
-        request.httpMethod = "POST"
-        request.httpBody = httpBody
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.addValue(configuration.serverKeyID, forHTTPHeaderField: "X-Apple-CloudKit-Request-KeyID")
-        request.addValue(date, forHTTPHeaderField: "X-Apple-CloudKit-Request-ISO8601Date")
-        request.addValue(signature, forHTTPHeaderField: "X-Apple-CloudKit-Request-SignatureV1")
-        return request
+    public func records(matching query: CKQuery, inZoneWith zoneID: CKRecordZone? = nil, desiredKeys: [CKRecordFieldKey]? = nil, resultsLimit: Int = CKQueryRequest.maximumResults) async throws -> CKQueryResult {
+        try await perform(
+            CKQueryRequest(query: query, zoneID: zoneID, resultsLimit: resultsLimit, desiredKeys: desiredKeys)
+        )
+    }
+    
+    public func modifyRecords(records: [CKRecord], type: CKRecordModifyType) async throws -> [CKRecordResult] {
+        try await perform(
+            CKModifyRecordsRequest(records: records, operationType: type)
+        )
+    }
+    
+    public func deleteRecords(for ids: [CKRecordID]) async throws -> [CKRecordResult] {
+        try await perform(
+            CKModifyRecordsRequest(records: ids.map { .init(recordName: $0) }, operationType: .delete)
+        )
+    }
+    
+    public func save(for records: [CKRecord]) async throws -> [CKRecordResult] {
+        try await perform(
+            CKModifyRecordsRequest(records: records, operationType: .forceUpdate)
+        )
     }
 }

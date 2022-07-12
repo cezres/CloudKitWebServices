@@ -124,7 +124,7 @@ private extension CloudKitWebServices {
         // Replace record fields
         var records = records
         results.forEach { result in
-            records[result.recordIndex].fields[result.fieldName] = .any(type: .ASSETID, value: result.response)
+            records[result.recordIndex].fields[result.fieldName] = .assetUploadReceipt(result.response)
         }
         return records
     }

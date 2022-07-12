@@ -17,8 +17,7 @@ public enum CKRecordField {
     case string(String)
     case int64(Int64)
     case asset(CKAsset)
-    case any(type: CKRecordFieldType, value: any Codable)
-    
+    case assetUploadReceipt(CKAssetUploadResponse)    
     case localAssetUrl(URL)
     case localAssetData(Data)
 }
@@ -73,11 +72,23 @@ extension CKRecordField: Codable {
     
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(value, forKey: .value)
+        switch self {
+        case .string(let value):
+            try container.encode(value, forKey: .value)
+        case .int64(let value):
+            try container.encode(value, forKey: .value)
+        case .asset(let value):
+            try container.encode(value, forKey: .value)
+        case .assetUploadReceipt(let value):
+            try container.encode(value, forKey: .value)
+        case .localAssetUrl(let value):
+            try container.encode(value, forKey: .value)
+        case .localAssetData(let value):
+            try container.encode(value, forKey: .value)
+        }
         try container.encode(type, forKey: .type)
     }
 }
-
 
 extension CKRecordField {
     
@@ -87,14 +98,12 @@ extension CKRecordField {
             return .STRING
         case .int64:
             return .INT64
-        case .asset, .localAssetData, .localAssetUrl:
+        case .asset, .localAssetData, .localAssetUrl, .assetUploadReceipt:
             return .ASSETID
-        case .any(let type, _):
-            return type
         }
     }
     
-    var value: any Codable {
+    var value: Any {
         switch self {
         case .string(let string):
             return string
@@ -102,7 +111,7 @@ extension CKRecordField {
             return int64
         case .asset(let recordAsset):
             return recordAsset
-        case .any(_, let value):
+        case .assetUploadReceipt(let value):
             return value
         case .localAssetUrl(let url):
             return url

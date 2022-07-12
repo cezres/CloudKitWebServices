@@ -12,26 +12,26 @@ final class CloudKitWebServicesRequestTests: XCTestCase {
 
     var services: CloudKitWebServices!
     
-    override func setUp() async throws {
-        guard let resourceURL = Bundle.module.resourceURL else { return }
-        let configurationUrl = Bundle.module.url(forResource: "configuration", withExtension: "json") ?? resourceURL.appendingPathComponent("Resources/configuration.json")
-        let configurationData = try Data(contentsOf: configurationUrl)
-        let configurationJson = try JSONSerialization.jsonObject(with: configurationData) as! [String: String]
-        let configuration = CloudKitWebServices.Configuration(
-            container: configurationJson["container"]!,
-            environment: "development",
-            database: "public",
-            serverKeyID: configurationJson["serverKeyID"]!,
-            serverKey: configurationJson["serverKey"]!
-        )
-        services = CloudKitWebServices(configuration: configuration)
-    }
+    // override func setUp() async throws {
+    //     guard let resourceURL = Bundle.module.resourceURL else { return }
+    //     let configurationUrl = Bundle.module.url(forResource: "configuration", withExtension: "json") ?? resourceURL.appendingPathComponent("Resources/configuration.json")
+    //     let configurationData = try Data(contentsOf: configurationUrl)
+    //     let configurationJson = try JSONSerialization.jsonObject(with: configurationData) as! [String: String]
+    //     let configuration = CloudKitWebServices.Configuration(
+    //         container: configurationJson["container"]!,
+    //         environment: "development",
+    //         database: "public",
+    //         serverKeyID: configurationJson["serverKeyID"]!,
+    //         serverKey: configurationJson["serverKey"]!
+    //     )
+    //     services = CloudKitWebServices(configuration: configuration)
+    // }
     
-    func testFetchRecords() async throws {
-        try await services.perform(
-            CKFetchRecordsRequest(recordIds: ["15C86234-0658-442F-A740-AC8610785A81"])
-        ).isEmpty.assertEqual(expression: false)
-    }
+    // func testFetchRecords() async throws {
+    //     try await services.perform(
+    //         CKFetchRecordsRequest(recordIds: ["15C86234-0658-442F-A740-AC8610785A81"])
+    //     ).isEmpty.assertEqual(expression: false)
+    // }
     
 //    func testQueryRecords() async throws {
 //        try await services.perform(

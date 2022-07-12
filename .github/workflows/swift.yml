@@ -19,6 +19,6 @@ jobs:
         CONFIGURATION_JSON: ${{ secrets.CONFIGURATION_JSON }}
       run: echo "$CONFIGURATION_JSON" > ./Tests/CloudKitWebServicesTests/Resources/configuration.json
     - name: Build
-      run: swift build -v
+      run: swift build
     - name: Run tests
-      run: swift test -v
+      run: swift test

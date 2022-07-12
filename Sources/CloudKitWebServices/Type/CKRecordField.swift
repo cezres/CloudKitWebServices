@@ -17,7 +17,7 @@ public enum CKRecordField {
     case string(String)
     case int64(Int64)
     case asset(CKAsset)
-    case any(type: CKRecordFieldType, value: Codable)
+    case any(type: CKRecordFieldType, value: any Codable)
     
     case localAssetUrl(URL)
     case localAssetData(Data)
@@ -94,7 +94,7 @@ extension CKRecordField {
         }
     }
     
-    var value: Codable {
+    var value: any Codable {
         switch self {
         case .string(let string):
             return string

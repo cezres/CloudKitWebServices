@@ -17,7 +17,7 @@ public struct CKRecord: Codable {
 
     public let recordType: String
 
-    public let fields: [String: CKRecordField]
+    public var fields: [String: CKRecordField]
 
     public let recordChangeTag: String
 
@@ -95,57 +95,4 @@ public struct CKRecordTimestamp: Codable {
     public let userRecordName: String
     
     public let deviceID: String
-}
-
-
-extension Optional {
-    func `default`(_ value: Wrapped) -> Wrapped {
-        switch self {
-        case .none:
-            return value
-        case .some(let wrapped):
-            return wrapped
-        }
-    }
-}
-
-extension KeyedDecodingContainer {
-    public func decodeValue<T: Decodable>(_ type: T.Type, forKey key: KeyedDecodingContainer<K>.Key, defaultValue: T) -> T {
-        do {
-            return try decode(type, forKey: key)
-        } catch {
-            return defaultValue
-        }
-    }
-    
-    public func decodeValue<T: Decodable>(_ type: T.Type, forKey key: KeyedDecodingContainer<K>.Key) -> T where T: DefaultValue {
-        do {
-            return try decode(type, forKey: key)
-        } catch {
-            return T.defaultValue()
-        }
-    }
-}
-
-public protocol DefaultValue {
-    static func defaultValue() -> Self
-}
-
-
-extension CKRecordTimestamp: DefaultValue {
-    public static func defaultValue() -> CKRecordTimestamp {
-        .init(timestamp: 0, userRecordName: "", deviceID: "")
-    }
-}
-
-extension Bool: DefaultValue {
-    public static func defaultValue() -> Bool {
-        false
-    }
-}
-
-extension String: DefaultValue {
-    public static func defaultValue() -> String {
-        ""
-    }
 }

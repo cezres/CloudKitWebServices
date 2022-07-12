@@ -7,11 +7,20 @@
 
 import Foundation
 
+public enum CKRecordFieldType: String, Codable {
+    case STRING
+    case ASSETID
+    case INT64
+}
+
 public enum CKRecordField {
     case string(String)
     case int64(Int64)
     case asset(CKAsset)
-    case uploadAsset(CKAssetUploadResponse)
+    case any(type: CKRecordFieldType, value: Codable)
+    
+    case localAssetUrl(URL)
+    case localAssetData(Data)
 }
 
 extension CKRecordField {
@@ -35,21 +44,12 @@ extension CKRecordField {
         if case .asset(let recordAsset) = self {
             return recordAsset
         } else {
-            return .init(fileChecksum: "", size: 0, downloadURL: "")
+            return .init(fileChecksum: "", size: 0, downloadURL: "", receipt: nil)
         }
     }
     
-    var value: Any {
-        switch self {
-        case .string(let string):
-            return string
-        case .int64(let int64):
-            return int64
-        case .asset(let recordAsset):
-            return recordAsset
-        case .uploadAsset(let asset):
-            return asset
-        }
+    func optionalValue<T>() -> T? {
+        value as? T
     }
 }
 
@@ -73,16 +73,7 @@ extension CKRecordField: Codable {
     
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        switch self {
-        case .string(let value):
-            try container.encode(value, forKey: .value)
-        case .int64(let value):
-            try container.encode(value, forKey: .value)
-        case .asset(let value):
-            try container.encode(value, forKey: .value)
-        case .uploadAsset(let value):
-            try container.encode(value, forKey: .value)
-        }
+        try container.encode(value, forKey: .value)
         try container.encode(type, forKey: .type)
     }
 }
@@ -90,22 +81,33 @@ extension CKRecordField: Codable {
 
 extension CKRecordField {
     
-    public enum CKRecordFieldType: String, Codable {
-        case STRING
-        case ASSETID
-        case INT64
-    }
-
     var type: CKRecordFieldType {
         switch self {
         case .string:
             return .STRING
         case .int64:
             return .INT64
-        case .asset:
+        case .asset, .localAssetData, .localAssetUrl:
             return .ASSETID
-        case .uploadAsset:
-            return .ASSETID
+        case .any(let type, _):
+            return type
+        }
+    }
+    
+    var value: Codable {
+        switch self {
+        case .string(let string):
+            return string
+        case .int64(let int64):
+            return int64
+        case .asset(let recordAsset):
+            return recordAsset
+        case .any(_, let value):
+            return value
+        case .localAssetUrl(let url):
+            return url
+        case .localAssetData(let data):
+            return data
         }
     }
 }

@@ -7,17 +7,33 @@
 
 import Foundation
 
+public protocol CKUploadData {
+    func load() throws -> Data
+}
+
+extension URL: CKUploadData {
+    public func load() throws -> Data {
+        try Data(contentsOf: self)
+    }
+}
+
+extension Data: CKUploadData {
+    public func load() throws -> Data {
+        self
+    }
+}
+
 public struct CKUploadDataRequest {
     
     public var url: URL
     
-    public var data: Data
+    public var data: CKUploadData
     
     public var filename: String = UUID().uuidString
 }
 
 public struct CKAssetUploadResponse: Codable {
-    public let size: Int
+    public let size: UInt
     public let fileChecksum: String
     public let receipt: String
 }
@@ -33,7 +49,7 @@ extension CKUploadDataRequest: CKRequest {
         request.addValue("multipart/form-data; boundary=----\(boundary)", forHTTPHeaderField: "Content-Type")
         var body = "------\(boundary)\r\n".data(using: .utf8) ?? Data()
         body.append("Content-Disposition: form-data; name=\"file\"; filename=\"\(filename)\"\r\n\r\n".data(using: .utf8) ?? Data())
-        body.append(data)
+        body.append(try data.load())
         body.append("\r\n------\(boundary)--\r\n".data(using: .utf8) ?? Data())
         request.httpBody = body
         return request

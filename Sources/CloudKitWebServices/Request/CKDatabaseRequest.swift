@@ -18,7 +18,6 @@ extension CKDatabaseRequest {
         let subpath = "/database/\(configuration.version)/\(configuration.container)/\(configuration.environment)/\(configuration.database)/\(Self.subpath)"
         
         let httpBody = try JSONEncoder().encode(self)
-        print(String(data: httpBody, encoding: .utf8) ?? "")
         
         // Date
         let date = ISO8601DateFormatter().string(from: .init())
@@ -33,7 +32,6 @@ extension CKDatabaseRequest {
         let signature = try privateKey.signature(for: message.data(using: .utf8)!).derRepresentation.base64EncodedString()
         
         var request = URLRequest(url: .init(string: "\(configuration.path)\(subpath)")!)
-        print(request.url!.absoluteString)
         request.httpMethod = "POST"
         request.httpBody = httpBody
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")

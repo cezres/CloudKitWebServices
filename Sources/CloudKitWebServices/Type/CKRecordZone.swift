@@ -14,5 +14,4 @@ public struct CKRecordZone: Codable {
     public var ownerRecordName: String? = nil
     
     public static var defaultZone: CKRecordZone { .init() }
-    
 }

@@ -56,20 +56,76 @@ extension CloudKitWebServices {
     }
     
     public func modifyRecords(records: [CKRecord], type: CKRecordModifyType) async throws -> [CKRecordResult] {
-        try await perform(
+        let records = try await uploadLocalAsset(records)
+        return try await perform(
             CKModifyRecordsRequest(records: records, operationType: type)
         )
     }
     
     public func deleteRecords(for ids: [CKRecordID]) async throws -> [CKRecordResult] {
-        try await perform(
-            CKModifyRecordsRequest(records: ids.map { .init(recordName: $0) }, operationType: .delete)
-        )
+        try await modifyRecords(records: ids.map { .init(recordName: $0) }, type: .delete)
     }
     
     public func save(for records: [CKRecord]) async throws -> [CKRecordResult] {
-        try await perform(
-            CKModifyRecordsRequest(records: records, operationType: .forceUpdate)
+        try await modifyRecords(records: records, type: .forceUpdate)
+    }
+    
+    public func save(for record: CKRecord) async throws -> CKRecordResult {
+        try await modifyRecords(records: [record], type: .forceUpdate).first!
+    }
+}
+
+private extension CloudKitWebServices {
+    
+    func uploadLocalAsset(_ records: [CKRecord]) async throws -> [CKRecord] {
+        
+        // Filter local assets
+        typealias UploadLocalAsset = (recordIndex: Int, fieldName: String, data: CKUploadData)
+        let localAssets = records.enumerated().flatMap { (index, record) -> [UploadLocalAsset] in
+            record.fields.compactMap { (key, value) -> UploadLocalAsset? in
+                switch value {
+                case .localAssetUrl(let url):
+                    return (index, key, url)
+                case .localAssetData(let data):
+                    return (index, key, data)
+                default:
+                    return nil
+                }
+            }
+        }
+        
+        // Create upload urls
+        let createUploadUrlResults = try await perform(
+            CKAssetsUploadRequest(
+                tokens: localAssets.map {
+                    .init(
+                        recordType: records[$0.recordIndex].recordType,
+                        recordName: records[$0.recordIndex].recordName,
+                        fieldName: $0.fieldName
+                    )
+                }
+            )
         )
+        
+        // Upload data
+        typealias UploadDataResult = (recordIndex: Int, fieldName: String, response: CKAssetUploadResponse)
+        let results = try await withThrowingTaskGroup(of: UploadDataResult.self, returning: [UploadDataResult].self) { group in
+            createUploadUrlResults.enumerated().forEach { (index, uploadUrl) in
+                group.addTask {
+                    let result = try await self.perform(
+                        CKUploadDataRequest(url: uploadUrl.url, data: localAssets[index].data)
+                    )
+                    return (localAssets[index].recordIndex, localAssets[index].fieldName, result)
+                }
+            }
+            return try await group.reduce([], { $0 + [$1] })
+        }
+        
+        // Replace record fields
+        var records = records
+        results.forEach { result in
+            records[result.recordIndex].fields[result.fieldName] = .any(type: .ASSETID, value: result.response)
+        }
+        return records
     }
 }

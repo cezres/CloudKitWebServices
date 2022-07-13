@@ -7,7 +7,7 @@
 
 import Foundation
 
-public protocol CKRequest {
+protocol CKRequest {
     
     associatedtype Response: Decodable
     
@@ -16,7 +16,7 @@ public protocol CKRequest {
     static func decodeResponse(_ data: Data) throws -> Response
 }
 
-public extension CKRequest {
+extension CKRequest {
     static func decodeResponse<T: Decodable>(_ data: Data, type: T.Type) throws -> T {
         do {
             return try JSONDecoder().decode(T.self, from: data)

@@ -43,6 +43,8 @@ extension CloudKitWebServices {
 }
 
 extension CloudKitWebServices {
+    
+    // Fetch
     public func records(for ids: [CKRecordID], desiredKeys: [CKRecordFieldKey]? = nil) async throws -> [CKRecordResult] {
         try await perform(
             CKFetchRecordsRequest(recordIds: ids, desiredKeys: desiredKeys)
@@ -55,6 +57,13 @@ extension CloudKitWebServices {
         )
     }
     
+    public func record(for id: CKRecordID, desiredKeys: [CKRecordFieldKey]? = nil) async throws -> CKRecord {
+        try await perform(
+            CKFetchRecordsRequest(recordIds: [id], desiredKeys: desiredKeys)
+        ).first!.get()
+    }
+    
+    // Modify
     public func modifyRecords(records: [CKRecord], type: CKRecordModifyType) async throws -> [CKRecordResult] {
         let records = try await uploadLocalAsset(records)
         return try await perform(
@@ -70,8 +79,8 @@ extension CloudKitWebServices {
         try await modifyRecords(records: records, type: .forceUpdate)
     }
     
-    public func save(for record: CKRecord) async throws -> CKRecordResult {
-        try await modifyRecords(records: [record], type: .forceUpdate).first!
+    public func save(for record: CKRecord) async throws -> CKRecord {
+        try await modifyRecords(records: [record], type: .forceUpdate).first!.get()
     }
 }
 
@@ -80,14 +89,16 @@ private extension CloudKitWebServices {
     func uploadLocalAsset(_ records: [CKRecord]) async throws -> [CKRecord] {
         
         // Filter local assets
-        typealias UploadLocalAsset = (recordIndex: Int, fieldName: String, data: CKUploadData)
+        typealias UploadLocalAsset = (recordIndex: Int, fieldName: String, data: CKAssetData)
         let localAssets = records.enumerated().flatMap { (index, record) -> [UploadLocalAsset] in
             record.fields.compactMap { (key, value) -> UploadLocalAsset? in
                 switch value {
-                case .localAssetUrl(let url):
-                    return (index, key, url)
-                case .localAssetData(let data):
-                    return (index, key, data)
+                case .asset(let asset):
+                    if let fileURL = asset.fileURL, fileURL.isFileURL {
+                        return (index, key, fileURL)
+                    } else {
+                        return nil
+                    }
                 default:
                     return nil
                 }
@@ -96,7 +107,7 @@ private extension CloudKitWebServices {
         
         // Create upload urls
         let createUploadUrlResults = try await perform(
-            CKAssetsUploadRequest(
+            CKAssetUploadURLRequest(
                 tokens: localAssets.map {
                     .init(
                         recordType: records[$0.recordIndex].recordType,
@@ -108,12 +119,12 @@ private extension CloudKitWebServices {
         )
         
         // Upload data
-        typealias UploadDataResult = (recordIndex: Int, fieldName: String, response: CKAssetUploadResponse)
+        typealias UploadDataResult = (recordIndex: Int, fieldName: String, asset: CKAsset)
         let results = try await withThrowingTaskGroup(of: UploadDataResult.self, returning: [UploadDataResult].self) { group in
             createUploadUrlResults.enumerated().forEach { (index, uploadUrl) in
                 group.addTask {
                     let result = try await self.perform(
-                        CKUploadDataRequest(url: uploadUrl.url, data: localAssets[index].data)
+                        CKAssetUploadDataRequest(url: uploadUrl.url, data: localAssets[index].data)
                     )
                     return (localAssets[index].recordIndex, localAssets[index].fieldName, result)
                 }
@@ -124,7 +135,7 @@ private extension CloudKitWebServices {
         // Replace record fields
         var records = records
         results.forEach { result in
-            records[result.recordIndex].fields[result.fieldName] = .assetUploadReceipt(result.response)
+            records[result.recordIndex].fields[result.fieldName] = .asset(result.asset)
         }
         return records
     }

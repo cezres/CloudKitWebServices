@@ -1,5 +1,5 @@
 //
-//  CKAssetsUploadRequest.swift
+//  CKAssetUploadURLRequest.swift
 //  
 //
 //  Created by 翟泉 on 2022/6/29.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct CKAssetsUploadRequest: CKDatabaseRequest {
+struct CKAssetUploadURLRequest: CKDatabaseRequest {
 
     static var subpath: String = "assets/upload"
     
@@ -18,7 +18,7 @@ struct CKAssetsUploadRequest: CKDatabaseRequest {
     public var zoneID: CKRecordZone?
 }
 
-extension CKAssetsUploadRequest {
+extension CKAssetUploadURLRequest {
     static func decodeResponse(_ data: Data) throws -> [CKAssetUploadUrl] {
         struct CKAssetsUploadResponse: Decodable {
             let tokens: [CKAssetUploadUrl]

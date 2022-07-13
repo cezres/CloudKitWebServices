@@ -9,18 +9,29 @@ import Foundation
 
 public struct CKAsset: Codable {
     
-    public let fileChecksum: String
+    public let fileChecksum: String?
     
     public let size: UInt
     
-    public let downloadURL: String
+    public let fileURL: URL?
     
-    public let receipt: String?
+    let receipt: String?
     
-    init(fileChecksum: String, size: UInt, downloadURL: String, receipt: String?) {
+    public init(fileURL: URL) throws {
+        self.fileChecksum = nil
+        self.size = try FileManager.default.attributesOfItem(atPath: fileURL.path)[.size] as! UInt
+        self.fileURL = fileURL
+        self.receipt = nil
+        
+        if size > 1024 * 1024 * 15 {
+            throw NSError(domain: "maximum file size is 15 MB", code: -1)
+        }
+    }
+    
+    init(fileChecksum: String?, size: UInt, downloadURL: String, receipt: String?) {
         self.fileChecksum = fileChecksum
         self.size = size
-        self.downloadURL = downloadURL
+        self.fileURL = URL(string: downloadURL)
         self.receipt = receipt
     }
     
@@ -35,16 +46,20 @@ public struct CKAsset: Codable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.fileChecksum = try container.decode(String.self, forKey: .fileChecksum)
         self.size = try container.decode(UInt.self, forKey: .size)
-        self.downloadURL = try container.decode(String.self, forKey: .downloadURL)
-        self.receipt = container.decodeValue(String?.self, forKey: .receipt)
+        if let downloadURL = try container.decodeIfPresent(String.self, forKey: .downloadURL) {
+            self.fileURL = URL(string: downloadURL.addingPercentEncoding(withAllowedCharacters: .urlFragmentAllowed) ?? downloadURL)
+        } else {
+            self.fileURL = nil
+        }
+        self.receipt = try container.decodeIfPresent(String.self, forKey: .receipt)
     }
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(self.fileChecksum, forKey: .fileChecksum)
         try container.encode(self.size, forKey: .size)
-        if !downloadURL.isEmpty {
-            try container.encode(self.downloadURL, forKey: .downloadURL)
+        if let fileURL = fileURL {
+            try container.encode(fileURL.absoluteString, forKey: .downloadURL)
         }
         if let receipt = receipt {
             try container.encodeIfPresent(receipt, forKey: .receipt)

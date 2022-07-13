@@ -44,22 +44,25 @@ struct CKModifyRecordsRequest: CKDatabaseRequest {
     }
 }
 
-public struct CKCommonRecord: Codable {
-    
-    public var recordName: String? = nil
-    
-    public var recordType: String? = nil
-    
-    public var recordChangeTag: String? = nil
-    
-    public var fields: [CKRecordFieldKey: CKRecordField] = [:]
-}
-
 extension CKModifyRecordsRequest {
     static func decodeResponse(_ data: Data) throws -> RecordsResult {
         struct ModifyRecordsResponse: Decodable {
             let records: RecordsResult
         }
         return try decodeResponse(data, type: ModifyRecordsResponse.self).records
+    }
+}
+
+extension CKModifyRecordsRequest {
+    
+    struct CKCommonRecord: Codable {
+        
+        var recordName: String? = nil
+        
+        var recordType: String? = nil
+        
+        var recordChangeTag: String? = nil
+        
+        var fields: [CKRecordFieldKey: CKRecordField] = [:]
     }
 }

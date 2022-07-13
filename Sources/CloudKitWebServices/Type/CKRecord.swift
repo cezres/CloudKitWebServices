@@ -13,11 +13,11 @@ public typealias CKRecordFieldKey = String
 
 public struct CKRecord: Codable {
     
-    public let recordName: String
+    public let recordName: CKRecordID
 
     public let recordType: String
 
-    public var fields: [String: CKRecordField]
+    public var fields: [CKRecordFieldKey: CKRecordField]
 
     public let recordChangeTag: String
 
@@ -57,9 +57,9 @@ public struct CKRecord: Codable {
     
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.recordName = try container.decode(String.self, forKey: .recordName)
+        self.recordName = try container.decode(CKRecordID.self, forKey: .recordName)
         self.recordType = container.decodeValue(String.self, forKey: .recordType)
-        self.fields = try container.decode([String : CKRecordField].self, forKey: .fields)
+        self.fields = try container.decode([CKRecordFieldKey : CKRecordField].self, forKey: .fields)
         self.recordChangeTag = try container.decode(String.self, forKey: .recordChangeTag)
         self.created = container.decodeValue(CKRecordTimestamp.self, forKey: .created)
         self.modified = container.decodeValue(CKRecordTimestamp.self, forKey: .modified)
@@ -95,4 +95,15 @@ public struct CKRecordTimestamp: Codable {
     public let userRecordName: String
     
     public let deviceID: String
+}
+
+public extension CKRecord {
+    
+    func setAsset(_ data: Data, for fieldKey: CKRecordFieldKey) async throws {
+        
+    }
+    
+    func setAsset(_ url: URL, for fieldKey: CKRecordFieldKey) async throws {
+        
+    }
 }

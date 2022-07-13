@@ -8,24 +8,7 @@
 import XCTest
 @testable import CloudKitWebServices
 
-final class CloudKitWebServicesRequestTests: XCTestCase {
-
-    var services: CloudKitWebServices!
-    
-    // override func setUp() async throws {
-    //     guard let resourceURL = Bundle.module.resourceURL else { return }
-    //     let configurationUrl = Bundle.module.url(forResource: "configuration", withExtension: "json") ?? resourceURL.appendingPathComponent("Resources/configuration.json")
-    //     let configurationData = try Data(contentsOf: configurationUrl)
-    //     let configurationJson = try JSONSerialization.jsonObject(with: configurationData) as! [String: String]
-    //     let configuration = CloudKitWebServices.Configuration(
-    //         container: configurationJson["container"]!,
-    //         environment: "development",
-    //         database: "public",
-    //         serverKeyID: configurationJson["serverKeyID"]!,
-    //         serverKey: configurationJson["serverKey"]!
-    //     )
-    //     services = CloudKitWebServices(configuration: configuration)
-    // }
+final class CloudKitWebServicesRequestTests: BaseCloudKitWebServicesTests {
     
     // func testFetchRecords() async throws {
     //     try await services.perform(
@@ -86,7 +69,7 @@ final class CloudKitWebServicesRequestTests: XCTestCase {
 //        let url = createUploadUrlResult.first!.url
 //        let data = "Example1".data(using: .utf8)!
 //        let uploadDataResult = try await services.perform(
-//            CKUploadDataRequest(url: url, data: data)
+//            CKAssetUploadDataRequest(url: url, data: data)
 //        )
 //
 //        // Save receipt to CloudKit

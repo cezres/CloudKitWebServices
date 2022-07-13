@@ -1,5 +1,5 @@
 //
-//  CKUploadDataRequest.swift
+//  CKAssetUploadDataRequest.swift
 //  
 //
 //  Created by 翟泉 on 2022/6/29.
@@ -7,39 +7,33 @@
 
 import Foundation
 
-public protocol CKUploadData {
+protocol CKAssetData {
     func load() throws -> Data
 }
 
-extension URL: CKUploadData {
+extension URL: CKAssetData {
     public func load() throws -> Data {
         try Data(contentsOf: self)
     }
 }
 
-extension Data: CKUploadData {
+extension Data: CKAssetData {
     public func load() throws -> Data {
         self
     }
 }
 
-public struct CKUploadDataRequest {
+struct CKAssetUploadDataRequest {
     
-    public var url: URL
+    var url: URL
     
-    public var data: CKUploadData
+    var data: CKAssetData
     
-    public var filename: String = UUID().uuidString
+    var filename: String = UUID().uuidString
 }
 
-public struct CKAssetUploadResponse: Codable {
-    public let size: UInt
-    public let fileChecksum: String
-    public let receipt: String
-}
-
-extension CKUploadDataRequest: CKRequest {
-    public typealias Response = CKAssetUploadResponse
+extension CKAssetUploadDataRequest: CKRequest {
+    public typealias Response = CKAsset
     
     public func asURLRequest(configuration: CloudKitWebServices.Configuration) throws -> URLRequest {
         let boundary = UUID().uuidString
@@ -55,9 +49,9 @@ extension CKUploadDataRequest: CKRequest {
         return request
     }
     
-    public static func decodeResponse(_ data: Data) throws -> CKAssetUploadResponse {
+    public static func decodeResponse(_ data: Data) throws -> CKAsset {
         struct Response: Decodable {
-            let singleFile: CKAssetUploadResponse
+            let singleFile: CKAsset
         }
         return try decodeResponse(data, type: Response.self).singleFile
     }

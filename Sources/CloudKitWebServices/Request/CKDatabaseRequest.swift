@@ -8,7 +8,7 @@
 import Foundation
 import CryptoKit
 
-public protocol CKDatabaseRequest: CKRequest, Encodable {
+protocol CKDatabaseRequest: CKRequest, Encodable {
     
     static var subpath: String { get }
 }

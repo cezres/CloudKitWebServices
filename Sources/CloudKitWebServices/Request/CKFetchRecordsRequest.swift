@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct CKFetchRecordsRequest: CKDatabaseRequest {
+struct CKFetchRecordsRequest: CKDatabaseRequest {
     public static var subpath: String = "records/lookup"
     
     public typealias Response = [CKRecordResult]

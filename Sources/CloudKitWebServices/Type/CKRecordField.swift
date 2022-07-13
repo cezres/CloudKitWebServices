@@ -17,12 +17,10 @@ public enum CKRecordField {
     case string(String)
     case int64(Int64)
     case asset(CKAsset)
-    case assetUploadReceipt(CKAssetUploadResponse)    
-    case localAssetUrl(URL)
-    case localAssetData(Data)
 }
 
 extension CKRecordField {
+    
     var stringValue: String {
         if case .string(let string) = self {
             return string
@@ -79,12 +77,6 @@ extension CKRecordField: Codable {
             try container.encode(value, forKey: .value)
         case .asset(let value):
             try container.encode(value, forKey: .value)
-        case .assetUploadReceipt(let value):
-            try container.encode(value, forKey: .value)
-        case .localAssetUrl(let value):
-            try container.encode(value, forKey: .value)
-        case .localAssetData(let value):
-            try container.encode(value, forKey: .value)
         }
         try container.encode(type, forKey: .type)
     }
@@ -98,7 +90,7 @@ extension CKRecordField {
             return .STRING
         case .int64:
             return .INT64
-        case .asset, .localAssetData, .localAssetUrl, .assetUploadReceipt:
+        case .asset:
             return .ASSETID
         }
     }
@@ -111,12 +103,6 @@ extension CKRecordField {
             return int64
         case .asset(let recordAsset):
             return recordAsset
-        case .assetUploadReceipt(let value):
-            return value
-        case .localAssetUrl(let url):
-            return url
-        case .localAssetData(let data):
-            return data
         }
     }
 }

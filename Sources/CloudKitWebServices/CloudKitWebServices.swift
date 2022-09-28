@@ -22,6 +22,16 @@ public extension CloudKitWebServices {
         public var database: String
         public var serverKeyID: String
         public var serverKey: String
+        
+        public init(path: String = "https://api.apple-cloudkit.com", version: Int = 1, container: String, environment: String, database: String, serverKeyID: String, serverKey: String) {
+            self.path = path
+            self.version = version
+            self.container = container
+            self.environment = environment
+            self.database = database
+            self.serverKeyID = serverKeyID
+            self.serverKey = serverKey
+        }
     }
 }
 
@@ -81,6 +91,12 @@ extension CloudKitWebServices {
     
     public func save(for record: CKRecord) async throws -> CKRecord {
         try await modifyRecords(records: [record], type: .forceUpdate).first!.get()
+    }
+    
+    public func recordChanges() async throws -> [CKRecord] {
+        try await perform(
+            CKFetchingRecordChangesRequest(resultsLimit: 3)
+        )
     }
 }
 

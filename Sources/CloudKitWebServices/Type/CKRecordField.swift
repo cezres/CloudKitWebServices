@@ -19,7 +19,7 @@ public enum CKRecordField {
     case asset(CKAsset)
 }
 
-extension CKRecordField {
+public extension CKRecordField {
     
     var stringValue: String {
         if case .string(let string) = self {
@@ -35,6 +35,9 @@ extension CKRecordField {
         } else {
             return 0
         }
+    }
+    var intValue: Int {
+        Int(int64Value)
     }
     
     var assetValue: CKAsset {

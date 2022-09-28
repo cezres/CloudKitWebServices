@@ -28,7 +28,7 @@ extension CKDatabaseRequest {
         // Message
         let message = date + ":" + payload + ":" + subpath
         // Signature
-        let privateKey = try! P256.Signing.PrivateKey(pemRepresentation: configuration.serverKey)
+        let privateKey = try P256.Signing.PrivateKey(pemRepresentation: configuration.serverKey)
         let signature = try privateKey.signature(for: message.data(using: .utf8)!).derRepresentation.base64EncodedString()
         
         var request = URLRequest(url: .init(string: "\(configuration.path)\(subpath)")!)

@@ -27,9 +27,9 @@ public struct CKRecord: Codable {
 
     public let deleted: Bool
     
-    public subscript<T>(string: String) -> T? {
-        fields[string]?.value as? T
-    }
+//    public subscript<T>(string: String) -> T? {
+//        fields[string]?.value as? T
+//    }
     
     public subscript(string: String) -> CKRecordField? {
         fields[string]

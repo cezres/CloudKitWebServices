@@ -16,6 +16,12 @@ public struct CKQuery: Codable {
     public var filterBy: [CKQueryFilter]
     
     public var sortBy: [CKQuerySortDescriptor]
+    
+    public init(recordType: String, filterBy: [CKQueryFilter] = [], sortBy: [CKQuerySortDescriptor] = []) {
+        self.recordType = recordType
+        self.filterBy = filterBy
+        self.sortBy = sortBy
+    }
 }
 
 public struct CKQueryFilter: Codable {
@@ -39,6 +45,10 @@ public struct CKQuerySortDescriptor: Codable {
     
     public var ascending: Bool
     
+    public init(fieldName: String, ascending: Bool) {
+        self.fieldName = fieldName
+        self.ascending = ascending
+    }
 }
 
 public enum CKQueryFilterComparator: String, Codable {
